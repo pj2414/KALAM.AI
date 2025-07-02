@@ -31,7 +31,7 @@ const ContentHistory = () => {
   const fetchHistory = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://kalamai-backend-production.up.railway.app/api/content/history', {
+      const response = await fetch('http://kalamai.up.railway.app/api/content/history', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -56,7 +56,7 @@ const ContentHistory = () => {
   const deleteContent = async (id: string) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://kalamai-backend-production.up.railway.app/api/content/${id}`, {
+      const response = await fetch(`http://kalamai.up.railway.app/api/content/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

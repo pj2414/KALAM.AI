@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,7 +37,7 @@ const SummaryGenerator = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://kalamai-backend-production.up.railway.app/api/content/generate', {
+      const response = await fetch('/api/content/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,20 +61,22 @@ const SummaryGenerator = () => {
         })
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setGeneratedContent(data.content.content);
-        toast({
-          title: "Summary Generated!",
-          description: "Your summary has been successfully created."
-        });
-      } else {
-        throw new Error('Failed to generate content');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to generate content');
       }
-    } catch (error) {
+
+      const data = await response.json();
+      setGeneratedContent(data.content.content);
+      toast({
+        title: "Summary Generated!",
+        description: "Your summary has been successfully created."
+      });
+    } catch (error: any) {
+      console.error('API Error:', error);
       toast({
         title: "Generation Failed",
-        description: "Failed to generate summary. Please try again.",
+        description: error.message || "Network error. Please check your connection.",
         variant: "destructive"
       });
     } finally {
