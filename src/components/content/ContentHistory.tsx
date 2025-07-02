@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +27,7 @@ const ContentHistory = () => {
   const [selectedType, setSelectedType] = useState('');
   const { toast } = useToast();
 
+  // Fetch history
   const fetchHistory = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -52,6 +52,7 @@ const ContentHistory = () => {
     }
   };
 
+  // Delete content
   const deleteContent = async (id: string) => {
     try {
       const token = localStorage.getItem('token');
