@@ -53,7 +53,7 @@ const AssignmentGenerator = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/content/generate', {
+      const response = await fetch('http://kalamai-backend-production.up.railway.app/api/content/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
