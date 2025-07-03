@@ -1,5 +1,4 @@
-
-const API_BASE_URL = 'http://kalamai-backend-production.up.railway.app/api';
+const API_BASE_URL = 'https://kalamai-backend-production.up.railway.app/api';
 
 class ApiService {
   private getAuthHeaders() {
@@ -11,18 +10,24 @@ class ApiService {
   }
 
   private async handleResponse(response: Response) {
+    const contentType = response.headers.get('content-type');
+    const isJson = contentType && contentType.includes('application/json');
+    
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(error || `HTTP error! status: ${response.status}`);
+      const error = isJson ? await response.json() : await response.text();
+      throw new Error(error.message || error || `HTTP error! status: ${response.status}`);
     }
-    return response.json();
+    
+    return isJson ? response.json() : response.text();
   }
 
   // Auth endpoints
   async login(email: string, password: string) {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ email, password })
     });
     return this.handleResponse(response);
@@ -31,7 +36,9 @@ class ApiService {
   async register(email: string, password: string) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
-      headers: this.getAuthHeaders(),
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ email, password })
     });
     return this.handleResponse(response);
