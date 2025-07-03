@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Search, FileText, Calendar, Trash2, Eye } from 'lucide-react';
+import { apiService } from '@/services/api';
 
 interface ContentItem {
   _id: string;
@@ -27,20 +28,10 @@ const ContentHistory = () => {
   const [selectedType, setSelectedType] = useState('');
   const { toast } = useToast();
 
-  // Fetch history
   const fetchHistory = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://kalamai.up.railway.app/api/content/history', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setContents(data.contents);
-      }
+      const data = await apiService.getContentHistory();
+      setContents(data.contents);
     } catch (error) {
       toast({
         title: "Error",
@@ -52,24 +43,14 @@ const ContentHistory = () => {
     }
   };
 
-  // Delete content
   const deleteContent = async (id: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://kalamai.up.railway.app/api/content/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      await apiService.deleteContent(id);
+      setContents(contents.filter(content => content._id !== id));
+      toast({
+        title: "Content Deleted",
+        description: "Content has been successfully deleted"
       });
-
-      if (response.ok) {
-        setContents(contents.filter(content => content._id !== id));
-        toast({
-          title: "Content Deleted",
-          description: "Content has been successfully deleted"
-        });
-      }
     } catch (error) {
       toast({
         title: "Error",

@@ -79,7 +79,7 @@ const BaseContentGenerator: React.FC<BaseContentGeneratorProps> = ({
         }
       });
 
-      const response = await fetch('http://kalamai.up.railway.app/api/content/generate', {
+      const response = await fetch('http://localhost:3000/api/content/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ const BaseContentGenerator: React.FC<BaseContentGeneratorProps> = ({
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://kalamai.up.railway.app/api/content/${currentContentId}/edit`, {
+      const response = await fetch(`http://localhost:3000/api/content/${currentContentId}/edit`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

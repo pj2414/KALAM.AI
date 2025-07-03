@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FileSpreadsheet, Upload } from 'lucide-react';
+import { Loader2, FileSpreadsheet } from 'lucide-react';
+import { apiService } from '@/services/api';
 
 const SummaryGenerator = () => {
   const [loading, setLoading] = useState(false);
@@ -36,47 +37,32 @@ const SummaryGenerator = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/content/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+      const data = await apiService.generateContent({
+        type: 'summary',
+        title: formData.title,
+        inputData: {
+          text: formData.text,
+          sourceType: formData.sourceType
         },
-        body: JSON.stringify({
-          type: 'summary',
-          title: formData.title,
-          inputData: {
-            text: formData.text,
-            sourceType: formData.sourceType
-          },
-          parameters: {
-            wordCount: formData.wordCount[0],
-            writingStyle: formData.writingStyle,
-            tone: formData.tone,
-            uniqueness: formData.uniqueness,
-            plagiarismSafety: true,
-            language: 'english'
-          }
-        })
+        parameters: {
+          wordCount: formData.wordCount[0],
+          writingStyle: formData.writingStyle,
+          tone: formData.tone,
+          uniqueness: formData.uniqueness,
+          plagiarismSafety: true,
+          language: 'english'
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to generate content');
-      }
-
-      const data = await response.json();
       setGeneratedContent(data.content.content);
       toast({
         title: "Summary Generated!",
         description: "Your summary has been successfully created."
       });
-    } catch (error: any) {
-      console.error('API Error:', error);
+    } catch (error) {
       toast({
         title: "Generation Failed",
-        description: error.message || "Network error. Please check your connection.",
+        description: "Failed to generate summary. Please try again.",
         variant: "destructive"
       });
     } finally {
