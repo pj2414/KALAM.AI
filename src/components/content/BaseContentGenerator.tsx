@@ -12,6 +12,7 @@ import { Loader2, Download, Edit3, Save, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import jsPDF from 'jspdf';
+import { apiService } from '@/services/api';
 
 interface BaseContentGeneratorProps {
   title: string;
@@ -71,7 +72,6 @@ const BaseContentGenerator: React.FC<BaseContentGeneratorProps> = ({
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const inputData: Record<string, any> = {};
       fields.forEach(field => {
         if (formData[field.id]) {
@@ -79,43 +79,31 @@ const BaseContentGenerator: React.FC<BaseContentGeneratorProps> = ({
         }
       });
 
-      const response = await fetch('/api/content/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          type: contentType,
-          title: formData.title,
-          inputData,
-          parameters: {
-            wordCount: formData.wordCount[0],
-            writingStyle: formData.writingStyle,
-            tone: formData.tone,
-            uniqueness: formData.uniqueness,
-            plagiarismSafety: true,
-            language: 'english'
-          }
-        })
+      const data = await apiService.generateContent({
+        type: contentType,
+        title: formData.title,
+        inputData,
+        parameters: {
+          wordCount: formData.wordCount[0],
+          writingStyle: formData.writingStyle,
+          tone: formData.tone,
+          uniqueness: formData.uniqueness,
+          plagiarismSafety: true,
+          language: 'english'
+        }
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setGeneratedContent(data.content.content);
-        setCurrentContentId(data.content.id);
-        setIsEditing(false);
-        toast({
-          title: `${title} Generated!`,
-          description: `Your ${title.toLowerCase()} has been successfully generated.`
-        });
-      } else {
-        throw new Error('Failed to generate content');
-      }
-    } catch (error) {
+      setGeneratedContent(data.content.content);
+      setCurrentContentId(data.content.id);
+      setIsEditing(false);
+      toast({
+        title: `${title} Generated!`,
+        description: `Your ${title.toLowerCase()} has been successfully generated.`
+      });
+    } catch (error: any) {
       toast({
         title: "Generation Failed",
-        description: `Failed to generate ${title.toLowerCase()}. Please try again.`,
+        description: error.message || `Failed to generate ${title.toLowerCase()}. Please try again.`,
         variant: "destructive"
       });
     } finally {
@@ -139,33 +127,20 @@ const BaseContentGenerator: React.FC<BaseContentGeneratorProps> = ({
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/content/${currentContentId}/edit`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content: editedContent,
-          editNote: `Manual edit from ${title.toLowerCase()} generator`
-        })
+      await apiService.updateContent(currentContentId, {
+        content: editedContent,
+        editNote: `Manual edit from ${title.toLowerCase()} generator`
       });
-
-      if (response.ok) {
-        setGeneratedContent(editedContent);
-        setIsEditing(false);
-        toast({
-          title: "Content Updated",
-          description: `Your ${title.toLowerCase()} has been successfully updated.`
-        });
-      } else {
-        throw new Error('Failed to save changes');
-      }
-    } catch (error) {
+      setGeneratedContent(editedContent);
+      setIsEditing(false);
+      toast({
+        title: "Content Updated",
+        description: `Your ${title.toLowerCase()} has been successfully updated.`
+      });
+    } catch (error: any) {
       toast({
         title: "Save Failed",
-        description: "Failed to save changes. Please try again.",
+        description: error.message || "Failed to save changes. Please try again.",
         variant: "destructive"
       });
     }

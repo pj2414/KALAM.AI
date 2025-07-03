@@ -11,6 +11,7 @@ import { Loader2, FileText, Download, Edit3, Save, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import jsPDF from 'jspdf';
+import { apiService } from '@/services/api';
 
 const EssayGenerator = () => {
   const [loading, setLoading] = useState(false);
@@ -42,47 +43,33 @@ const EssayGenerator = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/content/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+      const data = await apiService.generateContent({
+        type: 'essay',
+        title: formData.title,
+        inputData: {
+          topic: formData.topic,
+          additionalRequirements: formData.additionalRequirements
         },
-        body: JSON.stringify({
-          type: 'essay',
-          title: formData.title,
-          inputData: {
-            topic: formData.topic,
-            additionalRequirements: formData.additionalRequirements
-          },
-          parameters: {
-            wordCount: formData.wordCount[0],
-            writingStyle: formData.writingStyle,
-            tone: formData.tone,
-            uniqueness: formData.uniqueness,
-            plagiarismSafety: true,
-            language: 'english'
-          }
-        })
+        parameters: {
+          wordCount: formData.wordCount[0],
+          writingStyle: formData.writingStyle,
+          tone: formData.tone,
+          uniqueness: formData.uniqueness,
+          plagiarismSafety: true,
+          language: 'english'
+        }
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setGeneratedContent(data.content.content);
-        setCurrentContentId(data.content.id);
-        setIsEditing(false);
-        toast({
-          title: "Essay Generated!",
-          description: "Your essay has been successfully generated."
-        });
-      } else {
-        throw new Error('Failed to generate content');
-      }
-    } catch (error) {
+      setGeneratedContent(data.content.content);
+      setCurrentContentId(data.content.id);
+      setIsEditing(false);
+      toast({
+        title: "Essay Generated!",
+        description: "Your essay has been successfully generated."
+      });
+    } catch (error: any) {
       toast({
         title: "Generation Failed",
-        description: "Failed to generate essay. Please try again.",
+        description: error.message || "Failed to generate essay. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -106,33 +93,20 @@ const EssayGenerator = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`/api/content/${currentContentId}/edit`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content: editedContent,
-          editNote: 'Manual edit from essay generator'
-        })
+      await apiService.updateContent(currentContentId, {
+        content: editedContent,
+        editNote: 'Manual edit from essay generator'
       });
-
-      if (response.ok) {
-        setGeneratedContent(editedContent);
-        setIsEditing(false);
-        toast({
-          title: "Content Updated",
-          description: "Your essay has been successfully updated."
-        });
-      } else {
-        throw new Error('Failed to save changes');
-      }
-    } catch (error) {
+      setGeneratedContent(editedContent);
+      setIsEditing(false);
+      toast({
+        title: "Content Updated",
+        description: "Your essay has been successfully updated."
+      });
+    } catch (error: any) {
       toast({
         title: "Save Failed",
-        description: "Failed to save changes. Please try again.",
+        description: error.message || "Failed to save changes. Please try again.",
         variant: "destructive"
       });
     }

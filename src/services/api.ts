@@ -89,7 +89,7 @@ class ApiService {
   }
 
   async updateContent(id: string, updates: any) {
-    const response = await fetch(`${API_BASE_URL}/content/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/content/${id}/edit`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(updates)
