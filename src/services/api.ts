@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://kalamai-backend-production.up.railway.app/api';
+const API_BASE_URL = 'https://contentaibackend.onrender.com/api';
 
 class ApiService {
   private getAuthHeaders() {
